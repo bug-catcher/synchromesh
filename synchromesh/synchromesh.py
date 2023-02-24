@@ -23,7 +23,7 @@ def predict_constrained(completion_engine: CompletionEngine, lm: LanguageModel,
 
     while not completion_engine.is_complete(prediction):
         # Ask for unconstrained prediction.
-        continuation = lm.predict_unconstrained(prediction, batch_size, stop=stop_tokens)
+        continuation = lm.predict_unconstrained(prediction, batch_size, stop=stop_tokens, mocked=True)
         # hacky way to filter newlines
         #continuation = continuation.replace('\n', '')
         found_violation = False
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     num_samples = 1
     api_key = os.environ.get('OPENAI_API_KEY')
     for i in range(num_samples):
-        comp_engine = LarkCompletionEngine(None, '', True)
+        comp_engine = LarkCompletionEngine(grammar=None, start_token='', allow_ws=True)
         # rlm = RandomLanguageModel()
         gpt3 = OpenAIModel(model="code-davinci-002", prompt_template=code_prompt, api_key=api_key, temperature=1.)
         print(predict_constrained(comp_engine, gpt3, 1, True, stop_tokens=["###!end"]))

@@ -89,7 +89,7 @@ class OpenAIModel(LanguageModel):
             try:
                 tokens.append(self.token_idx[s[:(l - 1)]])
             except KeyError:
-                #print(f"s={s} l={l} key {s[:(l - 1)]}")
+                print(f"s={s} l={l} key {s[:(l - 1)]}")
             s = s[(l - 1):]
         return tokens
         #token_infos = tokenize.generate_tokens(io.StringIO(s).readline)
@@ -136,8 +136,12 @@ class OpenAIModel(LanguageModel):
 
     def predict_unconstrained(self, prefix, max_tokens, stop=None, mocked=False, randomized=False):
         time.sleep(0.5)
+        end_token = "##</code>"
         if mocked:
-            return self.predict_mock(randomized)
+            if end_token in prefix:
+                return end_token + "\n"
+            else:
+                return self.predict_mock(randomized)
 
         prompt = f"{self.prompt_template}{prefix}"
         response = openai.Completion.create(model=self.model, prompt=prompt,

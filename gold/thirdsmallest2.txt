@@ -11,3 +11,4 @@ def third_smallest(arr):
         elif num < third_smallest:
             third_smallest = num
     return third_smallest
+##</code>

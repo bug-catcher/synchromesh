@@ -1,3 +1,4 @@
 def third_smallest(arr):
     arr.sort()
     return arr[2]
+##</code>

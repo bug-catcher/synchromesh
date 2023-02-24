@@ -17,7 +17,7 @@ class LarkCompletionEngine(CompletionEngine):
         #self.parser = Lark(grammar, start=start_token, parser='lalr', regex=True)
         kwargs = dict(postlex=PythonIndenter(), start=['file_input'])
         #self.parser = Lark.open_from_package('lark', 'python.lark', ['grammars'], parser='lalr')
-        self.parser = Lark.open('venv/lib/python3.7/site-packages/lark/grammars/python.lark',parser='lalr', **kwargs)
+        self.parser = Lark.open('python.lark', parser='lalr', **kwargs)
         self.terminal_dict = self.parser._terminals_dict
         self.allow_ws = allow_ws
 

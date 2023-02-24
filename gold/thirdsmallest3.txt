@@ -3,3 +3,4 @@ def third_smallest(arr):
     if len(unique_nums) < 3:
         return None
     return unique_nums[2]
+##</code>

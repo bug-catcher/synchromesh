@@ -15,13 +15,14 @@ class CompletionEngine:
 class LarkCompletionEngine(CompletionEngine):
     def __init__(self, grammar, start_token, allow_ws: bool):
         #self.parser = Lark(grammar, start=start_token, parser='lalr', regex=True)
-        kwargs = dict(postlex=PythonIndenter(), start=['single_input'])
+        kwargs = dict(postlex=PythonIndenter(), start=['file_input'])
         #self.parser = Lark.open_from_package('lark', 'python.lark', ['grammars'], parser='lalr')
-        self.parser = Lark.open('python3.lark',parser='lalr', **kwargs)
+        self.parser = Lark.open('venv/lib/python3.7/site-packages/lark/grammars/python.lark',parser='lalr', **kwargs)
         self.terminal_dict = self.parser._terminals_dict
         self.allow_ws = allow_ws
 
     def complete(self, prefix: str) -> regex.Pattern:
+        #print(f"prefix={prefix}")
         interactive_parser = self.parser.parse_interactive(prefix)
         token = None
         try:
@@ -32,6 +33,7 @@ class LarkCompletionEngine(CompletionEngine):
         except UnexpectedToken as e:
             pass
         valid_tokens = interactive_parser.accepts()
+        #print(f"valid_tokens={[self.terminal_dict[t] for t in valid_tokens if t!='$END']}")
         # get the regex for the valid tokens
         valid_regex = [f'{self.terminal_dict[t].pattern.to_regexp()}' for t in valid_tokens if t!='$END']
 

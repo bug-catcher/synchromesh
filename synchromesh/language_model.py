@@ -9,6 +9,8 @@ from typing import List
 from typing import Tuple
 from typing import Dict
 import time
+import tokenize
+import io
 
 
 class LanguageModel:
@@ -68,6 +70,7 @@ class OpenAIModel(LanguageModel):
                 self.token_idx = json.loads(response.read())
             self.token_idx = {s.replace('\u0120', ' '): i
                             for s, i in self.token_idx.items()}
+            self.token_idx['\n'] = 50276
             self.vocab = sorted(self.token_idx.keys(), key=lambda k: self.token_idx[k])
 
     def tokenize(self, s: str) -> List[int]:
@@ -79,11 +82,16 @@ class OpenAIModel(LanguageModel):
             l = 1
             while l <= len(s) and s[:l] in self.token_idx:
                 l += 1
+            #print(f"l={l} s[:l]={s[:l]}")
             # Add it to tokens, remove from s.
-            tokens.append(self.token_idx[s[:(l - 1)]])
+            try:
+                tokens.append(self.token_idx[s[:(l - 1)]])
+            except KeyError:
+                #print(f"s={s} l={l} key {s[:(l - 1)]}")
             s = s[(l - 1):]
-
         return tokens
+        #token_infos = tokenize.generate_tokens(io.StringIO(s).readline)
+        #return [x[1] for x in token_infos]
 
     def vocabulary(self) -> List[str]:
         # sort keys by value, then return the keys

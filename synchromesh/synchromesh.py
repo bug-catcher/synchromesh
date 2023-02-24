@@ -25,7 +25,7 @@ def predict_constrained(completion_engine: CompletionEngine, lm: LanguageModel,
         # Ask for unconstrained prediction.
         continuation = lm.predict_unconstrained(prediction, batch_size, stop=stop_tokens)
         # hacky way to filter newlines
-        continuation = continuation.replace('\n', '')
+        #continuation = continuation.replace('\n', '')
         found_violation = False
         if verbose:
             print(f"continuation: {repr(continuation)}")
@@ -78,23 +78,28 @@ def is_prefix_valid(completion_engine: CompletionEngine,
             longest_completion_point = i
     # 2- Take the 'remainder'.
     completion_point_regex = completion_points[s[:longest_completion_point]]
+    #print(completion_point_regex)
     remainder = s[longest_completion_point:]
+    #print(f"remainder=<{remainder}>")
 
     # 3- Feed it character by character to the regex given by the completion point, and handle 3 cases:
     for i in range(len(remainder)):
         # If we have a violation of the regex.
         if not completion_point_regex.fullmatch(remainder[:i+1], partial=True):
             # Check if we have a full match up to the previous character.
+            #print(f"remainder[:i]={remainder[:i]}")
             if completion_point_regex.fullmatch(remainder[:i]):
                 # We found another completion point, reduce the problem and call recursively.
                 new_completion_point = s[:longest_completion_point] + remainder[:i]
                 # check if this base case is correct. (this is the case for the terminal symbol)
                 if completion_engine.is_complete(new_completion_point):
+                    print(f"afggh {s}")
                     return False
                 new_completion_point_regex = completion_engine.complete(new_completion_point)
                 completion_points[new_completion_point] = new_completion_point_regex
                 return is_prefix_valid(completion_engine, completion_points, s)
             else:
+                print(f"Failed at i:{i} matching:{remainder[:i+1]} \n{s}")
                 return False
 
     #    Case c- Got to the end with no violations, return True
@@ -142,6 +147,15 @@ if __name__ == "__main__":
 #Human:what's the department of BIO433?
 #Bot:"""
     code_prompt = '''
+        ###!start
+        import numpy as np
+        def largest(arr):
+            x = -np.inf
+            for a in arr:
+                if x < a:                                                                
+                    x = a
+            return x
+        ###!end
         #Write a Python program to find the third smallest element in an array arr.
         #1. The input arr contains only floating point numbers.
         #2. The input arr contains at least 3 elements
@@ -149,7 +163,6 @@ if __name__ == "__main__":
         #For the input [1, 2, 3] the output would be 1.
         #For the input [0, 7, 2, 3] the output would be 3.
         #For the input [-2, -1.5, 0, 3, 4] the output would be 0.
-        def find_third_smallest(arr):
     '''
     num_samples = 1
     api_key = os.environ.get('OPENAI_API_KEY')
@@ -157,4 +170,10 @@ if __name__ == "__main__":
         comp_engine = LarkCompletionEngine(None, '', True)
         # rlm = RandomLanguageModel()
         gpt3 = OpenAIModel(model="code-davinci-002", prompt_template=code_prompt, api_key=api_key, temperature=1.)
-        print(predict_constrained(comp_engine, gpt3, 1, True, stop_tokens=["\n"]))
+        print(predict_constrained(comp_engine, gpt3, 1, True, stop_tokens=["###!end"]))
+        #continuation='    ###!start\n        import numpy as np\n        def third_smallest(arr):\n            return np.partition(arr, 2)[2]\n'
+        #completion_points = {}
+        #completion_points[''] = comp_engine.complete('')
+        #b = is_prefix_valid(comp_engine, completion_points,  continuation)
+        #print(b)
+
